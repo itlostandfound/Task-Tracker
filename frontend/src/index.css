@@ -1,0 +1,184 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    /* dark mode enforced via explicit colors below */
+  }
+
+  body {
+    @apply text-royal-text font-sans;
+    background-color: #07071a;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 50% -20%, rgba(124, 58, 237, 0.18), transparent),
+      radial-gradient(ellipse 60% 50% at 100% 0%, rgba(228, 168, 32, 0.08), transparent),
+      radial-gradient(ellipse 60% 50% at 0% 100%, rgba(124, 58, 237, 0.10), transparent);
+    background-attachment: fixed;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif font-bold;
+  }
+
+  h1, h2 {
+    @apply text-royal-gold;
+  }
+
+  input, textarea, select {
+    @apply bg-royal-elevated text-royal-text border border-royal-border rounded focus:ring-2 focus:ring-royal-gold focus:border-transparent;
+  }
+
+  button {
+    @apply focus:ring-2 focus:ring-royal-gold focus:ring-offset-0;
+  }
+
+  a {
+    @apply text-royal-gold hover:text-royal-gold-lt transition-colors;
+  }
+
+  /* Royal scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: #0f0f2a;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #b8840a, #e4a820);
+    border-radius: 5px;
+    border: 2px solid #0f0f2a;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #e4a820, #f5c842);
+  }
+}
+
+@layer components {
+  /* Shimmering gold gradient text for royal headings */
+  .gold-gradient {
+    background: linear-gradient(135deg, #b8840a 0%, #f5c842 35%, #fff4d0 50%, #f5c842 65%, #b8840a 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 0 30px rgba(228, 168, 32, 0.25);
+  }
+
+  /* Ornate gold-bordered panel with inner glow */
+  .royal-panel {
+    @apply bg-royal-surface border-2 border-royal-gold/40 overflow-hidden;
+    box-shadow:
+      inset 0 0 30px rgba(7, 7, 26, 0.6),
+      0 4px 20px rgba(0, 0, 0, 0.4);
+  }
+
+  /* Gold gradient fill button */
+  .btn-royal {
+    background: linear-gradient(135deg, #f5c842, #e4a820 50%, #b8840a);
+    @apply text-royal-bg font-semibold rounded px-4 py-2 transition-all;
+    box-shadow: 0 2px 8px rgba(228, 168, 32, 0.25);
+  }
+  .btn-royal:hover {
+    background: linear-gradient(135deg, #fff4d0, #f5c842 50%, #e4a820);
+    box-shadow: 0 4px 16px rgba(228, 168, 32, 0.4);
+  }
+
+  /* Decorative flourish divider */
+  .flourish {
+    @apply flex items-center justify-center gap-3 text-royal-gold/50 text-sm;
+  }
+  .flourish::before,
+  .flourish::after {
+    content: '';
+    @apply h-px flex-1;
+    background: linear-gradient(90deg, transparent, rgba(228, 168, 32, 0.5), transparent);
+  }
+}
+
+/* Animated royal crest */
+@keyframes crest-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+@keyframes crest-glow {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(228, 168, 32, 0.25)); }
+  50% { filter: drop-shadow(0 0 18px rgba(228, 168, 32, 0.5)); }
+}
+.royal-crest {
+  transform-origin: center;
+  animation: crest-float 5s ease-in-out infinite, crest-glow 4.5s ease-in-out infinite;
+}
+@keyframes crest-twinkle {
+  0%, 100% { opacity: 0.15; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+.crest-sparkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: crest-twinkle 3s ease-in-out infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .royal-crest, .crest-sparkle {
+    animation: none;
+  }
+}
+
+/* TipTap rich-text editor content styling */
+.royal-editor {
+  @apply text-royal-text text-sm leading-relaxed;
+}
+.royal-editor:focus {
+  outline: none;
+}
+.royal-editor p {
+  @apply my-2;
+}
+.royal-editor h1 {
+  @apply font-serif font-bold text-royal-gold text-2xl mt-4 mb-2;
+}
+.royal-editor h2 {
+  @apply font-serif font-bold text-royal-gold text-xl mt-3 mb-2;
+}
+.royal-editor h3 {
+  @apply font-serif font-bold text-royal-gold/90 text-lg mt-3 mb-1;
+}
+.royal-editor ul {
+  @apply list-disc pl-6 my-2;
+}
+.royal-editor ol {
+  @apply list-decimal pl-6 my-2;
+}
+.royal-editor li {
+  @apply my-1;
+}
+.royal-editor li > p {
+  @apply my-0;
+}
+.royal-editor a {
+  @apply text-royal-gold underline hover:text-royal-gold-lt;
+}
+.royal-editor blockquote {
+  @apply border-l-4 border-royal-gold/50 pl-4 italic text-royal-muted my-3;
+}
+.royal-editor code {
+  @apply bg-royal-bg text-royal-gold-lt px-1.5 py-0.5 rounded text-xs font-mono;
+}
+.royal-editor pre {
+  @apply bg-royal-bg rounded p-3 pr-16 my-3 overflow-x-auto;
+}
+.royal-editor pre code {
+  @apply bg-transparent p-0 text-royal-text;
+}
+.royal-editor hr {
+  @apply border-0 h-px my-4;
+  background: linear-gradient(90deg, transparent, rgba(228, 168, 32, 0.5), transparent);
+}
+.royal-editor strong {
+  @apply text-royal-text font-bold;
+}
+/* Placeholder when empty */
+.royal-editor p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  @apply text-royal-muted float-left h-0 pointer-events-none italic;
+}

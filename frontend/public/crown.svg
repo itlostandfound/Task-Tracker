@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#fff4d0"/>
+      <stop offset="35%" stop-color="#f5c842"/>
+      <stop offset="70%" stop-color="#e4a820"/>
+      <stop offset="100%" stop-color="#b8840a"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="64" height="64" rx="13" fill="#0b0b22"/>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="11.5" fill="none" stroke="#e4a820" stroke-opacity="0.45" stroke-width="1.5"/>
+  <g stroke="#8a6308" stroke-width="1.2" stroke-linejoin="round">
+    <path d="M 13 45 L 18 25 L 25 35 L 32 16 L 39 35 L 46 25 L 51 45 Z" fill="url(#gold)"/>
+    <rect x="11" y="44" width="42" height="9" rx="2.5" fill="url(#gold)"/>
+    <circle cx="18" cy="23" r="3" fill="#f5c842"/>
+    <circle cx="32" cy="13" r="3.6" fill="#f5c842"/>
+    <circle cx="46" cy="23" r="3" fill="#f5c842"/>
+  </g>
+  <circle cx="22" cy="48.5" r="2.2" fill="#7c3aed" stroke="none"/>
+  <circle cx="32" cy="48.5" r="2.4" fill="#b91c4a" stroke="none"/>
+  <circle cx="42" cy="48.5" r="2.2" fill="#7c3aed" stroke="none"/>
+</svg>
