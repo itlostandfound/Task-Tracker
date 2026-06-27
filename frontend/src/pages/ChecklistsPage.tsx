@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
+import React, { useMemo, useEffect } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useChecklists, useDeleteChecklist } from '../hooks/useChecklists'
 import { useChecklistStore } from '../stores/useChecklistStore'
 import toast from 'react-hot-toast'
@@ -7,8 +7,16 @@ import { Search, Plus, Copy, Edit2, Trash2 } from 'lucide-react'
 
 export function ChecklistsPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const { viewMode, searchQuery, setViewMode, setSearchQuery, openModal, setEditingChecklistId } =
     useChecklistStore()
+
+  useEffect(() => {
+    if (location.state?.openCreate) {
+      openModal('create_checklist')
+      navigate(location.pathname, { replace: true, state: {} })
+    }
+  }, [location.state, openModal, navigate, location.pathname])
 
   const isTemplate = viewMode === 'templates'
   const { data: checklists = [], isLoading } = useChecklists(isTemplate, searchQuery)

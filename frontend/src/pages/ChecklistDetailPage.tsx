@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react'
+import React, { useState, useCallback, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useChecklist, useUpdateChecklist } from '../hooks/useChecklists'
 import { useChecklistStore } from '../stores/useChecklistStore'
@@ -13,12 +13,15 @@ export function ChecklistDetailPage() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: checklist, isLoading } = useChecklist(id || null)
+  const { data: templateChecklist } = useChecklist(checklist?.template_id || null)
   const updateChecklist = useUpdateChecklist()
   const { expandedItemId, setExpandedItemId } = useChecklistStore()
 
   const [localItems, setLocalItems] = useState<ChecklistItem[]>([])
   const [editingStep, setEditingStep] = useState<ChecklistStep | null>(null)
   const [editingItemId, setEditingItemId] = useState<string | null>(null)
+  const pendingItemsRef = useRef<ChecklistItem[]>([])
+  const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   React.useEffect(() => {
     if (checklist?.items) {
@@ -32,40 +35,40 @@ export function ChecklistDetailPage() {
 
   const handleStepToggle = useCallback(
     (itemId: string, stepId: string) => {
-      const updatedItems = localItems.map((item) => {
-        if (item.id === itemId) {
-          return {
-            ...item,
-            steps: item.steps.map((step) => {
-              if (step.id === stepId) {
-                return {
-                  ...step,
-                  is_completed: !step.is_completed,
-                  completed_at: !step.is_completed ? new Date().toISOString() : null,
+      setLocalItems((prev) => {
+        const updatedItems = prev.map((item) => {
+          if (item.id === itemId) {
+            return {
+              ...item,
+              steps: item.steps.map((step) => {
+                if (step.id === stepId) {
+                  return {
+                    ...step,
+                    is_completed: !step.is_completed,
+                    completed_at: !step.is_completed ? new Date().toISOString() : null,
+                  }
                 }
-              }
-              return step
-            }),
+                return step
+              }),
+            }
           }
-        }
-        return item
+          return item
+        })
+        pendingItemsRef.current = updatedItems
+        return updatedItems
       })
 
-      setLocalItems(updatedItems)
-
-      // Debounced save
-      setTimeout(() => {
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current)
+      debounceTimerRef.current = setTimeout(() => {
         if (id) {
           updateChecklist.mutate(
-            { id, payload: { items: updatedItems } },
-            {
-              onError: () => toast.error('Failed to save'),
-            }
+            { id, payload: { items: pendingItemsRef.current } },
+            { onError: () => toast.error('Failed to save') }
           )
         }
       }, 300)
     },
-    [localItems, id, updateChecklist]
+    [id, updateChecklist]
   )
 
   const handleDeleteStep = (itemId: string, stepId: string) => {
@@ -146,16 +149,17 @@ export function ChecklistDetailPage() {
     const deviceName = prompt('Enter device/item name:')
     if (!deviceName) return
 
+    const sourceSteps = templateChecklist?.items?.[0]?.steps ?? localItems[0]?.steps ?? []
     const newItem: ChecklistItem = {
       id: generateId(),
       name: deviceName,
       order: localItems.length,
-      steps: localItems[0]?.steps.map((step) => ({
+      steps: sourceSteps.map((step) => ({
         ...step,
         id: generateId(),
         is_completed: false,
         completed_at: null,
-      })) || [],
+      })),
     }
 
     const updatedItems = [...localItems, newItem]

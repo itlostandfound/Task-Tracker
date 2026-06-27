@@ -138,7 +138,7 @@ class ChecklistListResponse(BaseModel):
 
 class CloneRequest(BaseModel):
     checklist_name: str = Field(..., max_length=255)
-    device_list: list[str] = Field(..., min_items=1)
+    device_list: list[str] = Field(..., min_length=1)
 
 
 # List Response Wrappers

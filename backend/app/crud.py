@@ -252,18 +252,12 @@ async def get_checklists(
 async def create_checklist(
     db: AsyncSession, checklist: schemas.ChecklistCreate
 ) -> models.Checklist:
-    # If creating a template, auto-populate with placeholder device list
     items = []
-    if checklist.is_template:
-        placeholder_device = {
-            "id": str(uuid4()),
-            "name": "Device-1",
-            "order": 0,
-            "steps": [],
-        }
-        items = [placeholder_device]
-    elif checklist.items:
+    if checklist.items:
         items = [item.model_dump(mode='json') for item in checklist.items]
+    elif checklist.is_template:
+        # Fallback placeholder only when no items were provided
+        items = [{"id": str(uuid4()), "name": "Device-1", "order": 0, "steps": []}]
 
     db_checklist = models.Checklist(
         name=checklist.name,

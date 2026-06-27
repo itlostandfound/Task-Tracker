@@ -21,6 +21,16 @@ export function CreateChecklistModal() {
   const [stepDisplayText, setStepDisplayText] = useState('')
   const [stepHideCommand, setStepHideCommand] = useState(false)
 
+  const resetForm = () => {
+    setName('')
+    setSteps([])
+    setStepName('')
+    setStepType('text')
+    setStepCommand('')
+    setStepDisplayText('')
+    setStepHideCommand(false)
+  }
+
   const handleAddStep = () => {
     if (!stepName.trim()) {
       toast.error('Step name is required')
@@ -90,9 +100,8 @@ export function CreateChecklistModal() {
       {
         onSuccess: () => {
           toast.success(`${isTemplate ? 'Template' : 'Checklist'} created successfully`)
+          resetForm()
           closeModal()
-          setName('')
-          setSteps([])
         },
         onError: () => {
           toast.error('Failed to create checklist')
@@ -111,7 +120,7 @@ export function CreateChecklistModal() {
           <h2 className="text-2xl font-serif font-bold text-royal-gold">
             Create {isTemplate ? 'Template' : 'Checklist'}
           </h2>
-          <button onClick={closeModal} className="text-slate-400 hover:text-slate-200">
+          <button onClick={() => { resetForm(); closeModal() }} className="text-slate-400 hover:text-slate-200">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -242,7 +251,7 @@ export function CreateChecklistModal() {
           <div className="flex gap-3 pt-4">
             <button
               type="button"
-              onClick={closeModal}
+              onClick={() => { resetForm(); closeModal() }}
               className="flex-1 px-4 py-2 bg-slate-800 text-slate-200 rounded font-medium hover:bg-slate-700 transition"
             >
               Cancel

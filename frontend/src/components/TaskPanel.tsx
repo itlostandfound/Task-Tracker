@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 import {
   DndContext,
   closestCenter,
@@ -99,6 +99,10 @@ export function TaskPanel({ clientId }: TaskPanelProps) {
   const { data: tasks = [], isLoading } = useTasks(clientId, showCompletedTasks)
   const updateTask = useUpdateTask()
   const [localTasks, setLocalTasks] = useState<Task[]>([])
+
+  useEffect(() => {
+    setLocalTasks([])
+  }, [tasks])
 
   const sensors = useSensors(
     useSensor(PointerSensor, {

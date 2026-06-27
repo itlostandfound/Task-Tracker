@@ -1,6 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useAppStore } from '../stores/useAppStore'
-import { useChecklistStore } from '../stores/useChecklistStore'
 import { RoyalCrest } from './RoyalCrest'
 import { CreateChecklistModal } from './CreateChecklistModal'
 import { CloneChecklistModal } from './CloneChecklistModal'
@@ -17,17 +16,13 @@ export function Layout({ children }: LayoutProps) {
   const isChecklistsView = location.pathname.startsWith('/checklists')
 
   const { openModal: openAppModal } = useAppStore()
-  const { openModal: openChecklistModal } = useChecklistStore()
 
   const handleCreateTracker = () => {
     openAppModal('create_client')
   }
 
   const handleCreateChecklist = () => {
-    navigate('/checklists')
-    setTimeout(() => {
-      openChecklistModal('create_checklist')
-    }, 0)
+    navigate('/checklists', { state: { openCreate: true } })
   }
 
   return (

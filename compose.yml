@@ -55,7 +55,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.docker.network=traefik"   # ⭐ REQUIRED
-      - "traefik.http.routers.tasktracker.rule=Host(`tasktracker.work.itlostandfound.xyz`)"
+      - "traefik.http.routers.tasktracker.rule=Host(`${APP_DOMAIN}`)"
       - "traefik.http.routers.tasktracker.entrypoints=https"
       - "traefik.http.routers.tasktracker.tls=true"
       - "traefik.http.services.tasktracker.loadbalancer.server.port=80"

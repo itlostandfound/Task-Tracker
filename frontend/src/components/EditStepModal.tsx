@@ -25,7 +25,15 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
       setCommand(step.command || '')
       setHideCommand(step.hide_command || false)
     }
-  }, [step])
+  }, [step, isOpen])
+
+  const resetForm = () => {
+    setName('')
+    setType('text')
+    setDisplayText('')
+    setCommand('')
+    setHideCommand(false)
+  }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -57,6 +65,7 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
     }
 
     onSave(updatedStep)
+    resetForm()
     onClose()
     toast.success('Step updated')
   }
@@ -69,7 +78,7 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
         {/* Header */}
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-serif font-bold text-royal-gold">Edit Step</h2>
-          <button onClick={onClose} className="text-slate-400 hover:text-slate-200">
+          <button onClick={() => { resetForm(); onClose() }} className="text-slate-400 hover:text-slate-200">
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -150,7 +159,7 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
           <div className="flex gap-3 pt-4">
             <button
               type="button"
-              onClick={onClose}
+              onClick={() => { resetForm(); onClose() }}
               className="flex-1 px-4 py-2 bg-slate-800 text-slate-200 rounded font-medium hover:bg-slate-700 transition"
             >
               Cancel

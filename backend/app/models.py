@@ -86,7 +86,7 @@ class Checklist(Base):
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     is_template: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
     template_id: Mapped[str | None] = mapped_column(UUID(as_uuid=False), ForeignKey("checklists.id", ondelete="SET NULL"), nullable=True)
-    items: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    items: Mapped[list] = mapped_column(JSON, nullable=False, default=list)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now())
 

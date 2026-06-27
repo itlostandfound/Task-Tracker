@@ -43,8 +43,8 @@ export function useCreateChecklist() {
       const { data } = await axios.post<Checklist>('/checklists', payload)
       return data
     },
-    onSuccess: (_, vars) => {
-      qc.invalidateQueries({ queryKey: ['checklists', vars.is_template] })
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['checklists'] })
     },
   })
 }
@@ -83,7 +83,7 @@ export function useCloneChecklist() {
       return data
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['checklists', false] })
+      qc.invalidateQueries({ queryKey: ['checklists'] })
     },
   })
 }

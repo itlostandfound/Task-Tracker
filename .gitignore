@@ -48,8 +48,10 @@ build/
 npm-debug.log
 yarn-error.log
 
-# TypeScript compiled output (src/**/*.js from src/**/*.tsx)
+# TypeScript compiled output
 frontend/src/**/*.js
+frontend/*.js
+frontend/*.d.ts
 *.tsbuildinfo
 
 # Database
