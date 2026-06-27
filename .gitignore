@@ -48,6 +48,9 @@ build/
 npm-debug.log
 yarn-error.log
 
+# TypeScript compiled output (src/**/*.js from src/**/*.tsx)
+frontend/src/**/*.js
+
 # Database
 postgres_data/
 *.db
