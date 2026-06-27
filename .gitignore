@@ -50,6 +50,7 @@ yarn-error.log
 
 # TypeScript compiled output (src/**/*.js from src/**/*.tsx)
 frontend/src/**/*.js
+*.tsbuildinfo
 
 # Database
 postgres_data/
