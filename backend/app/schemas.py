@@ -88,6 +88,59 @@ class NoteResponse(NoteBase):
     model_config = {"from_attributes": True}
 
 
+# Checklist Schemas
+class ChecklistStep(BaseModel):
+    id: str
+    name: str = Field(..., max_length=500)
+    type: str = Field(..., pattern="^(text|command)$")
+    is_completed: bool = False
+    completed_at: Optional[datetime] = None
+    command: Optional[str] = None
+    display_text: str = Field(..., max_length=500)
+    hide_command: Optional[bool] = False
+    order: int = 0
+
+
+class ChecklistItem(BaseModel):
+    id: str
+    name: str = Field(..., max_length=255)
+    order: int = 0
+    steps: list[ChecklistStep] = []
+
+
+class ChecklistBase(BaseModel):
+    name: str = Field(..., max_length=255)
+    is_template: bool = False
+
+
+class ChecklistCreate(ChecklistBase):
+    items: Optional[list[ChecklistItem]] = None
+
+
+class ChecklistUpdate(BaseModel):
+    name: Optional[str] = Field(None, max_length=255)
+    items: Optional[list[ChecklistItem]] = None
+
+
+class ChecklistResponse(ChecklistBase):
+    id: str
+    template_id: Optional[str] = None
+    items: list[ChecklistItem] = []
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ChecklistListResponse(BaseModel):
+    data: list[ChecklistResponse]
+
+
+class CloneRequest(BaseModel):
+    checklist_name: str = Field(..., max_length=255)
+    device_list: list[str] = Field(..., min_items=1)
+
+
 # List Response Wrappers
 class TrackerListResponse(BaseModel):
     data: list[TrackerResponse]

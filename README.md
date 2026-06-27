@@ -4,8 +4,6 @@ A versatile, elegant task tracking dashboard and organizer built with modern web
 
 NOTE:  More features are planned, and will be added as time permits.  Keep checking back for updates, and please provide feedback, suggestions, or feature requests.  
 
-![Task Tracker Dashboard](./images/Task-Tracker.v1.png)
-
 ## About
 
 Task Tracker is a full-stack web application that provides a comprehensive solution for organizing and tracking tasks across multiple projects or efforts. Whether you're managing work initiatives, personal projects, or any other tracking needs, Task Tracker offers a clean, intuitive interface with powerful organizational features.
@@ -23,6 +21,12 @@ The application is built with a flexible architecture that separates concerns in
   - Severity levels (1-10 with color coding: Green for low severity → Red for critical)
   - Completion tracking with toggle checkbox
   - Drag-and-drop task reordering
+- **Dynamic Checklists**: Create reusable checklist templates with:
+  - Templating and cloning for rapid deployment
+  - Multi-device/item management with hierarchical steps
+  - Text and command step types with copy-to-clipboard
+  - Completion tracking with timestamps and audit reports
+  - Hide/show command functionality with display text labels
 - **Notes System**: Add rich text notes to tasks with title and date tracking
 - **Responsive Design**: Beautiful, dark-themed UI with a royal aesthetic
 - **Real-time Updates**: Built with React Query for efficient data fetching and caching
@@ -190,6 +194,16 @@ The backend provides a comprehensive REST API. Once running, visit:
 - `PATCH /api/v1/notes/{id}` - Update a note
 - `DELETE /api/v1/notes/{id}` - Delete a note
 
+### Checklists
+
+- `GET /api/v1/checklists` - List all checklists (with optional filters: `is_template`, `search`)
+- `POST /api/v1/checklists` - Create a new checklist or template
+- `GET /api/v1/checklists/{id}` - Get checklist details
+- `PUT /api/v1/checklists/{id}` - Update a checklist (items, steps, completion)
+- `DELETE /api/v1/checklists/{id}` - Delete a checklist
+- `POST /api/v1/checklists/{id}/clone` - Clone a template with device list
+- `POST /api/v1/checklists/undo` - Undo the last deletion
+
 ## Configuration
 
 ### Environment Variables
@@ -239,3 +253,18 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Frontend builds to a `dist/` folder which can be served by the backend or a separate web server
 - All API responses follow a consistent JSON structure for predictable client handling
 - The backend includes comprehensive error handling and validation
+
+## Version History
+
+### v1.0 - Task Tracking Foundation
+![Task Tracker Dashboard v1](./images/Task-Tracker.v1.png)
+
+### v2.0 - Checklist System Added
+![Task Tracker Dashboard v2](./images/Task-Tracker.v2.png)
+
+![Task Tracker Checklists Feature](./images/Task-Tracker.v2.Checklists.png)
+
+## Co-Authored By
+
+- **Claude (Haiku 4.5)** - AI assistant by Anthropic
+- **Hermes-Agent** - Collaborative agent for architectural decisions and multi-phase implementation

@@ -77,3 +77,20 @@ class Note(Base):
     __table_args__ = (
         Index("ix_notes_task_created", "task_id", "created_at"),
     )
+
+
+class Checklist(Base):
+    __tablename__ = "checklists"
+
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    name: Mapped[str] = mapped_column(String(255), nullable=False)
+    is_template: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    template_id: Mapped[str | None] = mapped_column(UUID(as_uuid=False), ForeignKey("checklists.id", ondelete="SET NULL"), nullable=True)
+    items: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now())
+
+    __table_args__ = (
+        Index("ix_checklists_is_template_name", "is_template", "name"),
+        Index("ix_checklists_created_at", "created_at"),
+    )

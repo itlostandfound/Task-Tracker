@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.database import engine
-from app.routers import trackers, tasks, notes
+from app.routers import trackers, tasks, notes, checklists
 
 
 @asynccontextmanager
@@ -39,6 +39,7 @@ async def health():
 app.include_router(trackers.router)
 app.include_router(tasks.router)
 app.include_router(notes.router)
+app.include_router(checklists.router)
 
 # Serve static files from built frontend
 static_dir = Path(__file__).parent.parent.parent / "frontend" / "dist"

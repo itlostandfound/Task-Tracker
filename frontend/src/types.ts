@@ -64,6 +64,51 @@ export interface NoteUpdate {
   content?: Record<string, unknown>
 }
 
+export interface ChecklistStep {
+  id: string
+  name: string
+  type: 'text' | 'command'
+  is_completed: boolean
+  completed_at: string | null
+  command?: string
+  display_text: string
+  hide_command?: boolean
+  order: number
+}
+
+export interface ChecklistItem {
+  id: string
+  name: string
+  order: number
+  steps: ChecklistStep[]
+}
+
+export interface Checklist {
+  id: string
+  name: string
+  is_template: boolean
+  template_id?: string | null
+  items: ChecklistItem[]
+  created_at: string
+  updated_at: string
+}
+
+export interface ChecklistCreate {
+  name: string
+  is_template: boolean
+  items?: ChecklistItem[]
+}
+
+export interface ChecklistUpdate {
+  name?: string
+  items?: ChecklistItem[]
+}
+
+export interface CloneRequest {
+  checklist_name: string
+  device_list: string[]
+}
+
 export interface ListResponse<T> {
   data: T[]
 }

@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 from typing import Optional
+from uuid import uuid4
 from sqlalchemy import select, func, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import models, schemas
@@ -211,6 +212,204 @@ async def delete_note(db: AsyncSession, note_id: str) -> Optional[models.Note]:
         await db.delete(db_note)
         await db.commit()
     return db_note
+
+
+# Checklist CRUD
+
+
+# Global undo stack (single-session, single-action undo)
+_undo_stack: list[dict] = []
+
+
+async def get_checklist(db: AsyncSession, checklist_id: str) -> Optional[models.Checklist]:
+    result = await db.execute(
+        select(models.Checklist).where(models.Checklist.id == checklist_id)
+    )
+    return result.scalars().first()
+
+
+async def get_checklists(
+    db: AsyncSession,
+    is_template: Optional[bool] = None,
+    search: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[models.Checklist]:
+    query = select(models.Checklist)
+
+    if is_template is not None:
+        query = query.where(models.Checklist.is_template == is_template)
+
+    if search:
+        query = query.where(models.Checklist.name.ilike(f"%{search}%"))
+
+    query = query.order_by(models.Checklist.created_at.desc()).offset(skip).limit(limit)
+
+    result = await db.execute(query)
+    return result.scalars().all()
+
+
+async def create_checklist(
+    db: AsyncSession, checklist: schemas.ChecklistCreate
+) -> models.Checklist:
+    # If creating a template, auto-populate with placeholder device list
+    items = []
+    if checklist.is_template:
+        placeholder_device = {
+            "id": str(uuid4()),
+            "name": "Device-1",
+            "order": 0,
+            "steps": [],
+        }
+        items = [placeholder_device]
+    elif checklist.items:
+        items = [item.model_dump(mode='json') for item in checklist.items]
+
+    db_checklist = models.Checklist(
+        name=checklist.name,
+        is_template=checklist.is_template,
+        items=items,
+    )
+    db.add(db_checklist)
+    await db.commit()
+    await db.refresh(db_checklist)
+    return db_checklist
+
+
+async def update_checklist(
+    db: AsyncSession, checklist_id: str, checklist: schemas.ChecklistUpdate
+) -> Optional[models.Checklist]:
+    db_checklist = await get_checklist(db, checklist_id)
+    if not db_checklist:
+        return None
+
+    if checklist.name is not None:
+        db_checklist.name = checklist.name
+
+    if checklist.items is not None:
+        db_checklist.items = [item.model_dump(mode='json') for item in checklist.items]
+
+    await db.commit()
+    await db.refresh(db_checklist)
+    return db_checklist
+
+
+async def delete_checklist(db: AsyncSession, checklist_id: str) -> Optional[models.Checklist]:
+    db_checklist = await get_checklist(db, checklist_id)
+    if db_checklist:
+        # Store in undo stack before deletion
+        _undo_stack.clear()
+        _undo_stack.append(
+            {
+                "checklist": {
+                    "id": db_checklist.id,
+                    "name": db_checklist.name,
+                    "is_template": db_checklist.is_template,
+                    "template_id": db_checklist.template_id,
+                    "items": db_checklist.items,
+                    "created_at": db_checklist.created_at.isoformat(),
+                    "updated_at": db_checklist.updated_at.isoformat(),
+                },
+                "action": "delete",
+            }
+        )
+
+        await db.delete(db_checklist)
+        await db.commit()
+
+    return db_checklist
+
+
+async def clone_checklist(
+    db: AsyncSession,
+    template_id: str,
+    checklist_name: str,
+    device_list: list[str],
+) -> Optional[models.Checklist]:
+    """Clone a template into a new instance with the provided device list."""
+    template = await get_checklist(db, template_id)
+    if not template or not template.is_template:
+        return None
+
+    # Get template steps from the first item (placeholder)
+    template_steps = []
+    if template.items and len(template.items) > 0:
+        template_steps = template.items[0].get("steps", [])
+
+    # Create new items for each device
+    new_items = []
+    for idx, device_name in enumerate(device_list):
+        new_item = {
+            "id": str(uuid4()),
+            "name": device_name,
+            "order": idx,
+            "steps": [
+                {
+                    "id": str(uuid4()),
+                    "name": step.get("name"),
+                    "type": step.get("type"),
+                    "is_completed": False,
+                    "completed_at": None,
+                    "command": step.get("command"),
+                    "display_text": step.get("display_text"),
+                    "hide_command": step.get("hide_command", False),
+                    "order": step_idx,
+                }
+                for step_idx, step in enumerate(template_steps)
+            ],
+        }
+        new_items.append(new_item)
+
+    # Create new checklist instance
+    db_checklist = models.Checklist(
+        name=checklist_name,
+        is_template=False,
+        template_id=template_id,
+        items=new_items,
+    )
+    db.add(db_checklist)
+    await db.commit()
+    await db.refresh(db_checklist)
+    return db_checklist
+
+
+async def undo_last_delete(db: AsyncSession) -> Optional[models.Checklist]:
+    """Restore the last deleted checklist."""
+    if not _undo_stack:
+        return None
+
+    undo_data = _undo_stack.pop()
+    checklist_data = undo_data["checklist"]
+
+    # Parse ISO datetime strings back to datetime objects
+    from datetime import datetime as dt
+    created_at_str = checklist_data["created_at"]
+    updated_at_str = checklist_data["updated_at"]
+
+    # Handle both ISO format strings and datetime objects
+    if isinstance(created_at_str, str):
+        created_at = dt.fromisoformat(created_at_str.replace('Z', '+00:00'))
+    else:
+        created_at = created_at_str
+
+    if isinstance(updated_at_str, str):
+        updated_at = dt.fromisoformat(updated_at_str.replace('Z', '+00:00'))
+    else:
+        updated_at = updated_at_str
+
+    db_checklist = models.Checklist(
+        id=checklist_data["id"],
+        name=checklist_data["name"],
+        is_template=checklist_data["is_template"],
+        template_id=checklist_data.get("template_id"),
+        items=checklist_data.get("items", []),
+        created_at=created_at,
+        updated_at=updated_at,
+    )
+    db.add(db_checklist)
+    await db.commit()
+    await db.refresh(db_checklist)
+    return db_checklist
 
 
 # Helper functions

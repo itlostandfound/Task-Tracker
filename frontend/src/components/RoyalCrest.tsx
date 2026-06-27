@@ -79,7 +79,7 @@ export function RoyalCrest() {
       </p>
       <div className="flourish my-3 w-24"><span>·</span></div>
       <p className="text-xs text-royal-gold/50 font-serif italic leading-snug text-center px-2">
-        Sarcasm in Excess Here and is Free
+        Version 2.0
       </p>
     </div>
   )
