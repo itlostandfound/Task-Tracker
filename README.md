@@ -247,6 +247,14 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
+## Contributors
+
+This project is developed through equal collaboration between:
+- **Claude (Haiku 4.5)** - Implementation & Development
+- **Hermes-Agent** - Architecture & Strategy
+
+For detailed contributor roles and contributions, see [CONTRIBUTORS.md](CONTRIBUTORS.md).
+
 ## Development Notes
 
 - The application uses SQLite for development (auto-created) and supports PostgreSQL for production
