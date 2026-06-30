@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  VERSION: "1.0.0"
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
@@ -29,4 +32,5 @@ jobs:
           push: true
           tags: |
             itlostandfound/task-tracker:latest
+            itlostandfound/task-tracker:${{ env.VERSION }}
             itlostandfound/task-tracker:${{ github.sha }}
