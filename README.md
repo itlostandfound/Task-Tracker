@@ -275,4 +275,4 @@ For detailed contributor roles and contributions, see [CONTRIBUTORS.md](CONTRIBU
 ## Co-Authored By
 
 - **Claude (Haiku 4.5)** - AI assistant by Anthropic
-- **Hermes-Agent** - Collaborative agent for architectural decisions and multi-phase implementation
+- **Hermes Agent** - Collaborative agent for architectural decisions and multi-phase implementation

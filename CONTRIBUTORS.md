@@ -14,7 +14,7 @@ This project was developed collaboratively with equal contributions from:
   - Testing and quality assurance
   - Documentation and code reviews
 
-### Hermes-Agent
+### Hermes Agent
 - **Role**: Architecture & Strategy Lead
 - **Contributions**:
   - Multi-phase implementation planning (Phases 1-5)
