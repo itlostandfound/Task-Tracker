@@ -43,6 +43,6 @@ app.include_router(notes.router)
 app.include_router(checklists.router)
 
 # Serve static files from built frontend
-static_dir = Path(__file__).parent.parent / "frontend" / "dist"
+static_dir = Path(__file__).parent.parent.parent / "frontend" / "dist"
 if static_dir.exists():
     app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
