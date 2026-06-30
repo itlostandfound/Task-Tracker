@@ -1,0 +1,51 @@
+---
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: trackerpostgres
+    env_file: .env
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - tracker
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U taskdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: itlostandfound/task-tracker:latest
+    container_name: trackerapp
+    env_file: .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - traefik
+      - tracker
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=traefik" # Required to pin the Ingress Network on a Dual Docker Network Configuration
+      - "traefik.http.routers.tasktracker.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.tasktracker.entrypoints=https"
+      - "traefik.http.routers.tasktracker.tls=true"
+      - "traefik.http.services.tasktracker.loadbalancer.server.port=8000"
+
+networks:
+  traefik:
+    external: true
+  tracker:
+    external: true
+
+# This configuration uses BIND Mounts for the database to make it local.
+# Verify your Docker Networks exist:  docker network ls
+# Create the Docker Networks if they do not:  docker network create <Network.Name>
