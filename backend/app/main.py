@@ -1,7 +1,8 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.database import engine
 from app.routers import trackers, tasks, notes, checklists
@@ -45,4 +46,15 @@ app.include_router(checklists.router)
 # Serve static files from built frontend
 static_dir = Path(__file__).parent.parent.parent / "frontend" / "dist"
 if static_dir.exists():
-    app.mount("/", StaticFiles(directory=str(static_dir), html=True), name="static")
+    # Mount static assets (JS, CSS, images) under /assets
+    assets_dir = static_dir / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
+
+    # Catch-all: serve index.html for any SPA route (must come after API routers)
+    @app.get("/{full_path:path}")
+    async def serve_spa(full_path: str, request: Request):
+        index_file = static_dir / "index.html"
+        if index_file.exists():
+            return FileResponse(str(index_file))
+        return JSONResponse({"detail": "Not Found"}, status_code=404)

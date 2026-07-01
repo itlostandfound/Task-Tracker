@@ -346,6 +346,7 @@ async def clone_checklist(
                     "completed_at": None,
                     "command": step.get("command"),
                     "display_text": step.get("display_text"),
+                    "instruction_text": step.get("instruction_text"),
                     "hide_command": step.get("hide_command", False),
                     "order": step_idx,
                 }

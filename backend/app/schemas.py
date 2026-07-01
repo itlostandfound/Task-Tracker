@@ -97,6 +97,7 @@ class ChecklistStep(BaseModel):
     completed_at: Optional[datetime] = None
     command: Optional[str] = None
     display_text: str = Field(..., max_length=500)
+    instruction_text: Optional[str] = None
     hide_command: Optional[bool] = False
     order: int = 0
 

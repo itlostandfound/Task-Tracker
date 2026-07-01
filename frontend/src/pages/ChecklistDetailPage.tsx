@@ -104,9 +104,13 @@ export function ChecklistDetailPage() {
 
     const updatedItems = localItems.map((item) => {
       if (item.id === editingItemId) {
+        const existingIndex = item.steps.findIndex((s) => s.id === updatedStep.id)
         return {
           ...item,
-          steps: item.steps.map((s) => (s.id === updatedStep.id ? updatedStep : s)),
+          steps:
+            existingIndex >= 0
+              ? item.steps.map((s) => (s.id === updatedStep.id ? updatedStep : s))
+              : [...item.steps, updatedStep],
         }
       }
       return item
@@ -120,8 +124,8 @@ export function ChecklistDetailPage() {
       updateChecklist.mutate(
         { id, payload: { items: updatedItems } },
         {
-          onSuccess: () => toast.success('Step updated'),
-          onError: () => toast.error('Failed to update step'),
+          onSuccess: () => toast.success('Step saved'),
+          onError: () => toast.error('Failed to save step'),
         }
       )
     }

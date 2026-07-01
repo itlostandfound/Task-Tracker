@@ -71,7 +71,6 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
     onSave(updatedStep)
     resetForm()
     onClose()
-    toast.success('Step updated')
   }
 
   if (!isOpen || !step) return null
