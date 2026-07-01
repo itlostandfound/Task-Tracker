@@ -72,6 +72,7 @@ export interface ChecklistStep {
   completed_at: string | null
   command?: string
   display_text: string
+  instruction_text?: string
   hide_command?: boolean
   order: number
 }

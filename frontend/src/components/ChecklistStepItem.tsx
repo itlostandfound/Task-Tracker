@@ -46,6 +46,11 @@ export function ChecklistStepItem({ step, onToggle, onDelete, onEdit }: Checklis
           )}
         </div>
 
+        {/* Instruction Text Display */}
+        {step.type === 'text' && step.instruction_text && (
+          <p className="mt-1 text-sm text-slate-400 whitespace-pre-wrap">{step.instruction_text}</p>
+        )}
+
         {/* Command Display */}
         {step.type === 'command' && step.command && (
           <div className="mt-2 text-xs">

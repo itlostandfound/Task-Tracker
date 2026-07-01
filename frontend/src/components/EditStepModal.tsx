@@ -14,6 +14,7 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
   const [name, setName] = useState('')
   const [type, setType] = useState<'text' | 'command'>('text')
   const [displayText, setDisplayText] = useState('')
+  const [instructionText, setInstructionText] = useState('')
   const [command, setCommand] = useState('')
   const [hideCommand, setHideCommand] = useState(false)
 
@@ -22,6 +23,7 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
       setName(step.name)
       setType(step.type)
       setDisplayText(step.display_text || step.name)
+      setInstructionText(step.instruction_text || '')
       setCommand(step.command || '')
       setHideCommand(step.hide_command || false)
     }
@@ -31,6 +33,7 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
     setName('')
     setType('text')
     setDisplayText('')
+    setInstructionText('')
     setCommand('')
     setHideCommand(false)
   }
@@ -60,6 +63,7 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
       name,
       type,
       display_text: displayText || name,
+      instruction_text: type === 'text' ? instructionText : undefined,
       command: type === 'command' ? command : undefined,
       hide_command: type === 'command' ? hideCommand : undefined,
     }
@@ -128,6 +132,20 @@ export function EditStepModal({ isOpen, step, onSave, onClose }: EditStepModalPr
               </p>
             )}
           </div>
+
+          {/* Instruction Text (only for text type) */}
+          {type === 'text' && (
+            <div>
+              <label className="block text-sm font-medium text-slate-200 mb-2">Instruction Text</label>
+              <textarea
+                value={instructionText}
+                onChange={(e) => setInstructionText(e.target.value)}
+                placeholder="Enter the full text instruction here..."
+                rows={4}
+                className="w-full px-4 py-2 bg-slate-800 border border-slate-700 rounded text-slate-100 placeholder-slate-500 focus:outline-none focus:border-royal-gold resize-y text-sm"
+              />
+            </div>
+          )}
 
           {/* Command (only show if type is command) */}
           {type === 'command' && (
