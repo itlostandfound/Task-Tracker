@@ -1,31 +1,37 @@
 ---
 services:
-  db:
+  trdb:
     image: postgres:16-alpine
     container_name: trackerpostgres
+    user: postgres
     env_file: .env
     volumes:
-      - ./postgres_data:/var/lib/postgresql/data
+      - ./postgresdata:/var/lib/postgresql/data
     networks:
       - tracker
+    restart: unless-stopped
+    labels:
+      - wud.watch=false # Prevents WUD (What's Up Docker) from auto-upgrading postgres to an incompatible version
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -h localhost -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 15s
 
   app:
     image: itlostandfound/task-tracker:latest
     container_name: trackerapp
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@trdb:5432/${POSTGRES_DB}
     depends_on:
-      db:
+      trdb:
         condition: service_healthy
     networks:
       - traefik
       - tracker
+    restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
       interval: 10s
@@ -34,7 +40,7 @@ services:
       start_period: 10s
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=traefik" # Required to pin the Ingress Network on a Dual Docker Network Configuration
+      - "traefik.docker.network=traefik"
       - "traefik.http.routers.tasktracker.rule=Host(`${APP_DOMAIN}`)"
       - "traefik.http.routers.tasktracker.entrypoints=https"
       - "traefik.http.routers.tasktracker.tls=true"
@@ -44,8 +50,8 @@ networks:
   traefik:
     external: true
   tracker:
-    external: true
+    driver: bridge
 
 # This configuration uses BIND Mounts for the database to make it local.
-# Verify your Docker Networks exist:  docker network ls
-# Create the Docker Networks if they do not:  docker network create <Network.Name>
+# The tracker network is managed by this Compose stack (created automatically on up).
+# Only the traefik network must pre-exist:  docker network create traefik
