@@ -116,7 +116,7 @@ export function useToggleStepComplete() {
       )
       return data
     },
-    onSuccess: (updatedStep, vars) => {
+    onSuccess: (_, vars) => {
       qc.invalidateQueries({ queryKey: ['projects', vars.projectId] })
       qc.invalidateQueries({ queryKey: ['projects'] })
     },
