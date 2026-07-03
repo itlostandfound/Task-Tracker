@@ -113,3 +113,69 @@ export interface CloneRequest {
 export interface ListResponse<T> {
   data: T[]
 }
+
+export interface ProjectStepReference {
+  id: string
+  step_id: string
+  title: string
+  url: string
+  description: string | null
+  created_at: string
+  updated_at: string
+}
+
+export interface ProjectStep {
+  id: string
+  project_id: string
+  title: string
+  content: Record<string, unknown>
+  content_text: string | null
+  position: number
+  is_completed: boolean
+  completed_at: string | null
+  references: ProjectStepReference[]
+  created_at: string
+  updated_at: string
+}
+
+export interface Project {
+  id: string
+  title: string
+  steps: ProjectStep[]
+  created_at: string
+  updated_at: string
+}
+
+export interface ProjectCreate {
+  title: string
+}
+
+export interface ProjectUpdate {
+  title?: string
+}
+
+export interface ProjectStepCreate {
+  title: string
+}
+
+export interface ProjectStepUpdate {
+  title?: string
+  content?: Record<string, unknown>
+  content_text?: string
+}
+
+export interface ProjectStepReferenceCreate {
+  title: string
+  url: string
+  description?: string
+}
+
+export interface ProjectStepReferenceUpdate {
+  title?: string
+  url?: string
+  description?: string
+}
+
+export interface StepReorderRequest {
+  step_ids: string[]
+}

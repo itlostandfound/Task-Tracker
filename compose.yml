@@ -1,7 +1,7 @@
 ---
 services:
-  trdb:
-    image: postgres:16-alpine
+  db:
+    image: postgres:16.9-alpine
     container_name: trackerpostgres
     user: postgres
     env_file: .env
@@ -11,9 +11,8 @@ services:
       - "5432:5432"
     networks:
       - tracker
-    # WARNING: If deploying on a server running WUD (What's Up Docker), add the label
-    # wud.watch=false to this service — WUD will auto-upgrade postgres to an incompatible
-    # beta version and break the container. See compose.traefik.yml for the production config.
+    labels:
+      - wud.watch=false # Prevents WUD (What's Up Docker) from auto-upgrading postgres to an incompatible version
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
@@ -25,11 +24,11 @@ services:
     container_name: trackerapp
     env_file: .env
     environment:
-      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@trdb:5432/${POSTGRES_DB}
+      - DATABASE_URL=postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
     ports:
       - "8000:8000"
     depends_on:
-      trdb:
+      db:
         condition: service_healthy
     networks:
       - tracker

@@ -1,7 +1,7 @@
 ---
 services:
   db:
-    image: postgres:16-alpine
+    image: postgres:16.9-alpine
     container_name: tasktracker-db
     user: postgres
     env_file: .env
@@ -11,9 +11,8 @@ services:
       - "5432:5432"
     networks:
       - tasktracker
-    # WARNING: If deploying on a server running WUD (What's Up Docker), add the label
-    # wud.watch=false to this service — WUD will auto-upgrade postgres to an incompatible
-    # beta version and break the container. See compose.traefik.yml for the production config.
+    labels:
+      - wud.watch=false # Prevents WUD (What's Up Docker) from auto-upgrading postgres to an incompatible version
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s

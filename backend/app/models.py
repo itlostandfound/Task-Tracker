@@ -94,3 +94,64 @@ class Checklist(Base):
         Index("ix_checklists_is_template_name", "is_template", "name"),
         Index("ix_checklists_created_at", "created_at"),
     )
+
+
+class Project(Base):
+    __tablename__ = "projects"
+
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now())
+
+    steps: Mapped[list["ProjectStep"]] = relationship(
+        "ProjectStep", back_populates="project", cascade="all, delete-orphan",
+        order_by="ProjectStep.position",
+    )
+
+    __table_args__ = (
+        Index("ix_projects_created_at", "created_at"),
+        Index("ix_projects_title", "title"),
+    )
+
+
+class ProjectStep(Base):
+    __tablename__ = "project_steps"
+
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    project_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
+    title: Mapped[str] = mapped_column(String(500), nullable=False)
+    content: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
+    content_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+    position: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    is_completed: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now())
+
+    project: Mapped["Project"] = relationship("Project", back_populates="steps")
+    references: Mapped[list["ProjectStepReference"]] = relationship(
+        "ProjectStepReference", back_populates="step", cascade="all, delete-orphan",
+    )
+
+    __table_args__ = (
+        Index("ix_project_steps_project_position", "project_id", "position"),
+    )
+
+
+class ProjectStepReference(Base):
+    __tablename__ = "project_step_references"
+
+    id: Mapped[str] = mapped_column(UUID(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    step_id: Mapped[str] = mapped_column(UUID(as_uuid=False), ForeignKey("project_steps.id", ondelete="CASCADE"), nullable=False)
+    title: Mapped[str] = mapped_column(String(255), nullable=False)
+    url: Mapped[str] = mapped_column(Text, nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=func.now(), onupdate=func.now())
+
+    step: Mapped["ProjectStep"] = relationship("ProjectStep", back_populates="references")
+
+    __table_args__ = (
+        Index("ix_project_step_references_step_id", "step_id"),
+    )

@@ -420,3 +420,267 @@ async def count_open_tasks(db: AsyncSession, tracker_id: str) -> int:
         )
     )
     return result.scalar() or 0
+
+
+# ── TipTap helpers ───────────────────────────────────────────────────────────
+
+def _extract_tiptap_text(content: dict) -> str:
+    """Recursively extract plain text from a TipTap JSON document."""
+    parts: list[str] = []
+
+    def walk(node: dict) -> None:
+        if isinstance(node.get("text"), str):
+            parts.append(node["text"])
+        for child in node.get("content", []):
+            walk(child)
+
+    walk(content)
+    return " ".join(parts)
+
+
+# ── Project CRUD ──────────────────────────────────────────────────────────────
+
+async def get_projects(
+    db: AsyncSession,
+    incomplete_only: bool = False,
+    search: Optional[str] = None,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[models.Project]:
+    from sqlalchemy.orm import selectinload
+    from sqlalchemy import exists, not_
+
+    stmt = (
+        select(models.Project)
+        .options(
+            selectinload(models.Project.steps)
+            .selectinload(models.ProjectStep.references)
+        )
+        .order_by(models.Project.created_at.desc())
+    )
+    if search:
+        stmt = stmt.where(models.Project.title.ilike(f"%{search}%"))
+    if incomplete_only:
+        # Keep projects that have no steps OR have at least one incomplete step
+        incomplete_subq = (
+            select(models.ProjectStep.project_id)
+            .where(
+                models.ProjectStep.project_id == models.Project.id,
+                models.ProjectStep.is_completed == False,
+            )
+            .correlate(models.Project)
+            .exists()
+        )
+        no_steps_subq = (
+            not_(
+                select(models.ProjectStep.project_id)
+                .where(models.ProjectStep.project_id == models.Project.id)
+                .correlate(models.Project)
+                .exists()
+            )
+        )
+        stmt = stmt.where(incomplete_subq | no_steps_subq)
+    stmt = stmt.offset(skip).limit(limit)
+    result = await db.execute(stmt)
+    return list(result.scalars().unique().all())
+
+
+async def get_project(db: AsyncSession, project_id: str) -> Optional[models.Project]:
+    from sqlalchemy.orm import selectinload
+
+    result = await db.execute(
+        select(models.Project)
+        .where(models.Project.id == project_id)
+        .options(
+            selectinload(models.Project.steps)
+            .selectinload(models.ProjectStep.references)
+        )
+    )
+    return result.scalar_one_or_none()
+
+
+async def create_project(db: AsyncSession, data: schemas.ProjectCreate) -> models.Project:
+    project = models.Project(title=data.title)
+    db.add(project)
+    await db.commit()
+    return await get_project(db, project.id)
+
+
+async def update_project(db: AsyncSession, project_id: str, data: schemas.ProjectUpdate) -> Optional[models.Project]:
+    project = await get_project(db, project_id)
+    if not project:
+        return None
+    if data.title is not None:
+        project.title = data.title
+    await db.commit()
+    return await get_project(db, project_id)
+
+
+async def delete_project(db: AsyncSession, project_id: str) -> None:
+    project = await get_project(db, project_id)
+    if project:
+        await db.delete(project)
+        await db.commit()
+
+
+# ── Project Step CRUD ─────────────────────────────────────────────────────────
+
+async def create_project_step(
+    db: AsyncSession, project_id: str, data: schemas.ProjectStepCreate
+) -> models.ProjectStep:
+    from sqlalchemy.orm import selectinload
+
+    result = await db.execute(
+        select(func.coalesce(func.max(models.ProjectStep.position), -1))
+        .where(models.ProjectStep.project_id == project_id)
+    )
+    max_pos = result.scalar_one()
+    step = models.ProjectStep(
+        project_id=project_id,
+        title=data.title,
+        position=max_pos + 1,
+        content={},
+    )
+    db.add(step)
+    await db.commit()
+    result = await db.execute(
+        select(models.ProjectStep)
+        .where(models.ProjectStep.id == step.id)
+        .options(selectinload(models.ProjectStep.references))
+    )
+    return result.scalar_one()
+
+
+async def update_project_step(
+    db: AsyncSession, step_id: str, data: schemas.ProjectStepUpdate
+) -> Optional[models.ProjectStep]:
+    from sqlalchemy.orm import selectinload
+
+    result = await db.execute(
+        select(models.ProjectStep)
+        .where(models.ProjectStep.id == step_id)
+        .options(selectinload(models.ProjectStep.references))
+    )
+    step = result.scalar_one_or_none()
+    if not step:
+        return None
+    if data.title is not None:
+        step.title = data.title
+    if data.content is not None:
+        step.content = data.content
+        # Derive content_text from content when not explicitly supplied
+        if data.content_text is None:
+            step.content_text = _extract_tiptap_text(data.content)
+    if data.content_text is not None:
+        step.content_text = data.content_text
+    await db.commit()
+    # Do not call db.refresh() — expire_on_commit=False keeps eagerly-loaded
+    # references valid; refresh() would evict the selectinload'd collection.
+    return step
+
+
+async def toggle_step_completion(db: AsyncSession, step_id: str) -> Optional[models.ProjectStep]:
+    from sqlalchemy.orm import selectinload
+
+    result = await db.execute(
+        select(models.ProjectStep)
+        .where(models.ProjectStep.id == step_id)
+        .options(selectinload(models.ProjectStep.references))
+    )
+    step = result.scalar_one_or_none()
+    if not step:
+        return None
+    step.is_completed = not step.is_completed
+    step.completed_at = datetime.now(timezone.utc) if step.is_completed else None
+    await db.commit()
+    # Do not call db.refresh() — see update_project_step for rationale.
+    return step
+
+
+async def reorder_project_steps(
+    db: AsyncSession, project_id: str, step_ids: list[str]
+) -> list[models.ProjectStep]:
+    from sqlalchemy.orm import selectinload
+
+    result = await db.execute(
+        select(models.ProjectStep)
+        .where(models.ProjectStep.project_id == project_id)
+        .options(selectinload(models.ProjectStep.references))
+    )
+    steps_by_id = {s.id: s for s in result.scalars().all()}
+    for position, step_id in enumerate(step_ids):
+        if step_id in steps_by_id:
+            steps_by_id[step_id].position = position
+    await db.commit()
+    return sorted(steps_by_id.values(), key=lambda s: s.position)
+
+
+async def delete_project_step(db: AsyncSession, step_id: str) -> bool:
+    result = await db.execute(
+        select(models.ProjectStep).where(models.ProjectStep.id == step_id)
+    )
+    step = result.scalar_one_or_none()
+    if not step:
+        return False
+    project_id = step.project_id
+    await db.delete(step)
+    await db.commit()
+    # Renumber remaining steps to keep positions contiguous
+    result = await db.execute(
+        select(models.ProjectStep)
+        .where(models.ProjectStep.project_id == project_id)
+        .order_by(models.ProjectStep.position)
+    )
+    for i, s in enumerate(result.scalars().all()):
+        s.position = i
+    await db.commit()
+    return True
+
+
+# ── Project Step Reference CRUD ───────────────────────────────────────────────
+
+async def create_step_reference(
+    db: AsyncSession, step_id: str, data: schemas.ProjectStepReferenceCreate
+) -> models.ProjectStepReference:
+    ref = models.ProjectStepReference(
+        step_id=step_id,
+        title=data.title,
+        url=data.url,
+        description=data.description,
+    )
+    db.add(ref)
+    await db.commit()
+    await db.refresh(ref)
+    return ref
+
+
+async def update_step_reference(
+    db: AsyncSession, ref_id: str, data: schemas.ProjectStepReferenceUpdate
+) -> Optional[models.ProjectStepReference]:
+    result = await db.execute(
+        select(models.ProjectStepReference).where(models.ProjectStepReference.id == ref_id)
+    )
+    ref = result.scalar_one_or_none()
+    if not ref:
+        return None
+    if data.title is not None:
+        ref.title = data.title
+    if data.url is not None:
+        ref.url = data.url
+    if data.description is not None:
+        ref.description = data.description
+    await db.commit()
+    await db.refresh(ref)
+    return ref
+
+
+async def delete_step_reference(db: AsyncSession, ref_id: str) -> bool:
+    result = await db.execute(
+        select(models.ProjectStepReference).where(models.ProjectStepReference.id == ref_id)
+    )
+    ref = result.scalar_one_or_none()
+    if not ref:
+        return False
+    await db.delete(ref)
+    await db.commit()
+    return True
