@@ -4,6 +4,7 @@ import { RoyalCrest } from './RoyalCrest'
 import { CreateChecklistModal } from './CreateChecklistModal'
 import { CloneChecklistModal } from './CloneChecklistModal'
 import { RenameChecklistModal } from './RenameChecklistModal'
+import { CreateProjectModal } from './CreateProjectModal'
 
 interface LayoutProps {
   children: React.ReactNode
@@ -12,8 +13,12 @@ interface LayoutProps {
 export function Layout({ children }: LayoutProps) {
   const location = useLocation()
   const navigate = useNavigate()
-  const sidebarHidden = location.pathname.startsWith('/trackers/') || location.pathname.startsWith('/checklists/')
+  const sidebarHidden =
+    location.pathname.startsWith('/trackers/') ||
+    location.pathname.startsWith('/checklists/') ||
+    location.pathname.startsWith('/projects/')
   const isChecklistsView = location.pathname.startsWith('/checklists')
+  const isProjectsView = location.pathname.startsWith('/projects')
 
   const { openModal: openAppModal } = useAppStore()
 
@@ -24,6 +29,18 @@ export function Layout({ children }: LayoutProps) {
   const handleCreateChecklist = () => {
     navigate('/checklists', { state: { openCreate: true } })
   }
+
+  const handleCreateProject = () => {
+    navigate('/projects', { state: { openCreate: true } })
+  }
+
+  const handleCreate = isProjectsView
+    ? handleCreateProject
+    : isChecklistsView
+    ? handleCreateChecklist
+    : handleCreateTracker
+
+  const createLabel = isProjectsView ? 'Project' : isChecklistsView ? 'Checklist' : 'Tracker'
 
   return (
     <div className="flex h-screen bg-royal-bg">
@@ -37,12 +54,12 @@ export function Layout({ children }: LayoutProps) {
             <div className="flourish my-2"><span>⚜</span></div>
             <p className="text-xs text-royal-gold/60 text-center italic font-serif mb-4">A Royal Domain</p>
 
-            {/* View Toggle */}
-            <div className="flex gap-2 mb-4">
+            {/* View Toggle — stacked */}
+            <div className="flex flex-col gap-1 mb-3">
               <button
                 onClick={() => navigate('/')}
-                className={`flex-1 px-3 py-2 rounded text-sm font-semibold uppercase tracking-wider transition ${
-                  !isChecklistsView
+                className={`w-full px-3 py-2 rounded text-sm font-semibold uppercase tracking-wider transition ${
+                  !isChecklistsView && !isProjectsView
                     ? 'bg-royal-gold text-slate-950'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
                 }`}
@@ -51,7 +68,7 @@ export function Layout({ children }: LayoutProps) {
               </button>
               <button
                 onClick={() => navigate('/checklists')}
-                className={`flex-1 px-3 py-2 rounded text-sm font-semibold uppercase tracking-wider transition ${
+                className={`w-full px-3 py-2 rounded text-sm font-semibold uppercase tracking-wider transition ${
                   isChecklistsView
                     ? 'bg-royal-gold text-slate-950'
                     : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
@@ -59,15 +76,29 @@ export function Layout({ children }: LayoutProps) {
               >
                 Checklists
               </button>
+              <button
+                onClick={() => navigate('/projects')}
+                className={`w-full px-3 py-2 rounded text-sm font-semibold uppercase tracking-wider transition ${
+                  isProjectsView
+                    ? 'bg-royal-gold text-slate-950'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                Projects
+              </button>
             </div>
+
+            <hr className="border-royal-gold/30 mb-3" />
 
             {/* Create Button */}
             <button
-              onClick={isChecklistsView ? handleCreateChecklist : handleCreateTracker}
+              onClick={handleCreate}
               className="w-full px-4 py-3 rounded border-2 border-royal-gold text-royal-gold hover:bg-royal-gold/10 hover:shadow-[0_0_16px_rgba(228,168,32,0.3)] transition-all text-sm font-semibold uppercase tracking-widest"
             >
-              + Create {isChecklistsView ? 'Checklist' : 'Tracker'}
+              + Create {createLabel}
             </button>
+
+            <hr className="border-royal-gold/30 mt-3" />
           </div>
 
           <RoyalCrest />
@@ -78,10 +109,11 @@ export function Layout({ children }: LayoutProps) {
         <div className="h-screen overflow-auto p-2 w-full">{children}</div>
       </div>
 
-      {/* Checklist Modals */}
+      {/* Modals */}
       <CreateChecklistModal />
       <CloneChecklistModal />
       <RenameChecklistModal />
+      <CreateProjectModal />
     </div>
   )
 }

@@ -153,3 +153,88 @@ class TaskListResponse(BaseModel):
 
 class NoteListResponse(BaseModel):
     data: list[NoteResponse]
+
+
+# ── Project Schemas ───────────────────────────────────────────────────────────
+
+class ProjectStepReferenceBase(BaseModel):
+    title: str = Field(..., max_length=255)
+    url: str
+    description: Optional[str] = None
+
+
+class ProjectStepReferenceCreate(ProjectStepReferenceBase):
+    pass
+
+
+class ProjectStepReferenceUpdate(BaseModel):
+    title: Optional[str] = Field(None, max_length=255)
+    url: Optional[str] = None
+    description: Optional[str] = None
+
+
+class ProjectStepReferenceResponse(ProjectStepReferenceBase):
+    id: str
+    step_id: str
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ProjectStepBase(BaseModel):
+    title: str = Field(..., max_length=500)
+
+
+class ProjectStepCreate(ProjectStepBase):
+    pass
+
+
+class ProjectStepUpdate(BaseModel):
+    title: Optional[str] = Field(None, max_length=500)
+    content: Optional[dict] = None
+    content_text: Optional[str] = None
+
+
+class ProjectStepResponse(ProjectStepBase):
+    id: str
+    project_id: str
+    content: dict
+    content_text: Optional[str]
+    position: int
+    is_completed: bool
+    completed_at: Optional[datetime]
+    references: list[ProjectStepReferenceResponse] = []
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ProjectBase(BaseModel):
+    title: str = Field(..., max_length=255)
+
+
+class ProjectCreate(ProjectBase):
+    pass
+
+
+class ProjectUpdate(BaseModel):
+    title: Optional[str] = Field(None, max_length=255)
+
+
+class ProjectResponse(ProjectBase):
+    id: str
+    steps: list[ProjectStepResponse] = []
+    created_at: datetime
+    updated_at: datetime
+
+    model_config = {"from_attributes": True}
+
+
+class ProjectListResponse(BaseModel):
+    data: list[ProjectResponse]
+
+
+class StepReorderRequest(BaseModel):
+    step_ids: list[str] = Field(..., min_length=1)

@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.database import engine
-from app.routers import trackers, tasks, notes, checklists
+from app.routers import trackers, tasks, notes, checklists, projects
 from app.config import settings
 
 
@@ -42,6 +42,7 @@ app.include_router(trackers.router)
 app.include_router(tasks.router)
 app.include_router(notes.router)
 app.include_router(checklists.router)
+app.include_router(projects.router)
 
 # Serve static files from built frontend
 static_dir = Path(__file__).parent.parent.parent / "frontend" / "dist"
