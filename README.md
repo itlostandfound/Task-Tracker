@@ -265,12 +265,38 @@ For detailed contributor roles and contributions, see [CONTRIBUTORS.md](CONTRIBU
 ## Version History
 
 ### v1.0 - Task Tracking Foundation
-![Task Tracker Dashboard v1](./images/Task-Tracker.v1.png)
 
-### v2.0 - Checklist System Added
-![Task Tracker Dashboard v2](./images/Task-Tracker.v2.png)
+- Multiple tracker support (projects, efforts, initiatives)
+- Task management with severity levels (1–10, color-coded green → red)
+- Drag-and-drop task reordering
+- Completion tracking with toggle checkbox
+- Rich text notes system with title and date tracking
+- Dark-themed UI with royal aesthetic
 
-![Task Tracker Checklists Feature](./images/Task-Tracker.v2.Checklists.png)
+### v2.0 - Checklist System
+
+- Dynamic checklist feature with reusable template support
+- Checklist cloning for rapid multi-device/item deployment
+- Hierarchical steps with text and command step types
+- Copy-to-clipboard for command steps with optional display text labels
+- Hide/show command functionality
+- Completion tracking with timestamps and audit/completion reports
+
+### v3.0.0 - Projects & API Security
+
+- Projects feature with full CRUD — create, edit, delete, and list projects
+- Ordered steps with TipTap rich-text content editor per step
+- Code block support with syntax highlighting and copy-to-clipboard in step content
+- Per-step references section for storing hyperlinks with title and description
+- Drag-to-reorder steps within a project
+- Step completion toggling with auto-expand to next incomplete step
+- Progress bar and completion badge on project tiles
+- Incomplete-only filter and search on the projects listing page
+- Bearer token API authentication — all endpoints protected via `Authorization: Bearer`
+- Runtime token injection via `/config.js` — no secrets baked into the Docker image
+- MCP-ready API design with full CRUD endpoints for all resources
+
+![Task Tracker Dashboard v3](./images/Task-Tracker.v3.png)
 
 ## Co-Authored By
 
