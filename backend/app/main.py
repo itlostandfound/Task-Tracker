@@ -1,8 +1,9 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
+import json
 from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from app.database import engine
 from app.routers import trackers, tasks, notes, checklists, projects
@@ -33,10 +34,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Health check endpoint
+# Health check — unprotected so orchestration tooling doesn't need a token
 @app.get("/api/v1/health")
 async def health():
     return {"status": "ok"}
+
+
+# Runtime config for the SPA — unprotected by design (the browser needs the
+# token before it can authenticate, so this endpoint bootstraps that).
+# Served before the SPA catch-all so it isn't swallowed by index.html.
+@app.get("/config.js", response_class=Response)
+async def config_js():
+    token = settings.api_secret_token
+    return Response(
+        content=f"window.__API_TOKEN__ = {json.dumps(token)};",
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-store"},
+    )
 
 # Include routers — all protected by Bearer token (see deps.verify_token)
 _auth = [Depends(verify_token)]
