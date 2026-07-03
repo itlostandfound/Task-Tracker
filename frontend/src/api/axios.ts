@@ -4,11 +4,14 @@ import toast from 'react-hot-toast'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1'
 
+const token = import.meta.env.VITE_API_TOKEN
+
 const instance: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
   headers: {
     'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   },
 })
 

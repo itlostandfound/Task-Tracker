@@ -1,12 +1,13 @@
 from contextlib import asynccontextmanager
 from pathlib import Path
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.database import engine
 from app.routers import trackers, tasks, notes, checklists, projects
 from app.config import settings
+from app.deps import verify_token
 
 
 @asynccontextmanager
@@ -37,12 +38,13 @@ app.add_middleware(
 async def health():
     return {"status": "ok"}
 
-# Include routers
-app.include_router(trackers.router)
-app.include_router(tasks.router)
-app.include_router(notes.router)
-app.include_router(checklists.router)
-app.include_router(projects.router)
+# Include routers — all protected by Bearer token (see deps.verify_token)
+_auth = [Depends(verify_token)]
+app.include_router(trackers.router, dependencies=_auth)
+app.include_router(tasks.router, dependencies=_auth)
+app.include_router(notes.router, dependencies=_auth)
+app.include_router(checklists.router, dependencies=_auth)
+app.include_router(projects.router, dependencies=_auth)
 
 # Serve static files from built frontend
 static_dir = Path(__file__).parent.parent.parent / "frontend" / "dist"
