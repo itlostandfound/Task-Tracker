@@ -574,8 +574,11 @@ async def update_project_step(
     if data.content_text is not None:
         step.content_text = data.content_text
     await db.commit()
-    # Do not call db.refresh() — expire_on_commit=False keeps eagerly-loaded
-    # references valid; refresh() would evict the selectinload'd collection.
+    # Refresh only updated_at (server-computed via onupdate=func.now()) so its
+    # expired value doesn't trigger an async lazy-load during response
+    # serialization. A full refresh() would also evict the selectinload'd
+    # references collection.
+    await db.refresh(step, attribute_names=["updated_at"])
     return step
 
 
@@ -593,7 +596,8 @@ async def toggle_step_completion(db: AsyncSession, step_id: str) -> Optional[mod
     step.is_completed = not step.is_completed
     step.completed_at = datetime.now(timezone.utc) if step.is_completed else None
     await db.commit()
-    # Do not call db.refresh() — see update_project_step for rationale.
+    # Refresh only updated_at — see update_project_step for rationale.
+    await db.refresh(step, attribute_names=["updated_at"])
     return step
 
 
