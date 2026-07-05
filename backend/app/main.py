@@ -68,9 +68,18 @@ if static_dir.exists():
     if assets_dir.exists():
         app.mount("/assets", StaticFiles(directory=str(assets_dir)), name="assets")
 
-    # Catch-all: serve index.html for any SPA route (must come after API routers)
+    # Catch-all: serve a matching root-level static file (favicon.ico, crown.svg,
+    # apple-touch-icon.png, ...) if one exists, otherwise fall back to index.html
+    # for client-side SPA routes (must come after API routers)
     @app.get("/{full_path:path}")
     async def serve_spa(full_path: str, request: Request):
+        candidate = (static_dir / full_path).resolve()
+        if (
+            candidate.is_file()
+            and static_dir.resolve() in candidate.parents
+        ):
+            return FileResponse(str(candidate))
+
         index_file = static_dir / "index.html"
         if index_file.exists():
             return FileResponse(str(index_file))

@@ -120,10 +120,16 @@ function SortableStep({
   }
 
   return (
-    <div ref={setNodeRef} style={style} className="border border-slate-700 rounded-lg overflow-hidden">
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`border border-slate-700 rounded-lg overflow-hidden flex flex-col ${
+        isExpanded ? 'flex-1 min-h-0' : 'flex-shrink-0'
+      }`}
+    >
       {/* Step Header */}
       <div
-        className={`flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
+        className={`flex-shrink-0 flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors ${
           isExpanded ? 'bg-slate-800' : 'bg-slate-900 hover:bg-slate-800/60'
         }`}
         onClick={() => onToggleExpand(step.id)}
@@ -175,9 +181,9 @@ function SortableStep({
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="bg-slate-900/50 border-t border-slate-700 p-4 space-y-4">
+        <div className="flex-1 min-h-0 flex flex-col bg-slate-900/50 border-t border-slate-700 p-4 gap-4 overflow-y-auto">
           {/* TipTap Editor */}
-          <div className="h-64">
+          <div className="flex-1 min-h-[12rem]">
             <RichTextEditor
               content={step.content}
               onChange={(json, text) => onSaveContent(step.id, json, text)}
@@ -185,7 +191,7 @@ function SortableStep({
           </div>
 
           {/* Completion Toggle */}
-          <div className="flex items-center gap-3">
+          <div className="flex-shrink-0 flex items-center gap-3">
             <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
@@ -200,7 +206,7 @@ function SortableStep({
           </div>
 
           {/* References Section */}
-          <div className="border-t border-slate-700/60 pt-4">
+          <div className="flex-shrink-0 border-t border-slate-700/60 pt-4">
             <div className="flex items-center justify-between mb-3">
               <h4 className="text-xs font-semibold text-royal-gold/80 uppercase tracking-wider">
                 References
@@ -478,9 +484,9 @@ export function ProjectDetailPage() {
   const allComplete = totalSteps > 0 && completedSteps === totalSteps
 
   return (
-    <div className="max-w-4xl mx-auto pt-6 pb-16 px-4">
+    <div className="flex flex-col h-full w-full pt-6 pb-4 px-4">
       {/* Back + Delete */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex-shrink-0 flex items-center justify-between mb-6">
         <button
           onClick={() => navigate('/projects')}
           className="flex items-center gap-2 text-slate-400 hover:text-royal-gold transition text-sm"
@@ -498,7 +504,7 @@ export function ProjectDetailPage() {
       </div>
 
       {/* Project Title */}
-      <div className="mb-2">
+      <div className="flex-shrink-0 mb-2">
         {editingTitle ? (
           <input
             ref={titleInputRef}
@@ -524,7 +530,7 @@ export function ProjectDetailPage() {
       </div>
 
       {/* Progress Summary */}
-      <div className="flex items-center gap-3 mb-8">
+      <div className="flex-shrink-0 flex items-center gap-3 mb-4">
         <span className="text-slate-400 text-sm">
           {totalSteps === 0 ? 'No steps' : `${completedSteps} of ${totalSteps} steps completed`}
         </span>
@@ -544,7 +550,7 @@ export function ProjectDetailPage() {
       ) : (
         <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={steps.map((s) => s.id)} strategy={verticalListSortingStrategy}>
-            <div className="space-y-2">
+            <div className="flex-1 min-h-0 flex flex-col gap-2 overflow-y-auto">
               {steps.map((step, index) => (
                 <SortableStep
                   key={step.id}
@@ -564,7 +570,7 @@ export function ProjectDetailPage() {
       )}
 
       {/* Add Step */}
-      <div className="mt-4">
+      <div className="flex-shrink-0 mt-4">
         {showAddStep ? (
           <div className="flex gap-2">
             <input

@@ -190,19 +190,19 @@ export function ChecklistDetailPage() {
   })
 
   if (isLoading) {
-    return <div className="max-w-6xl mx-auto pt-6 text-slate-400">Loading...</div>
+    return <div className="w-full px-4 pt-6 text-slate-400">Loading...</div>
   }
 
   if (!checklist) {
     return (
-      <div className="max-w-6xl mx-auto pt-6">
+      <div className="w-full px-4 pt-6">
         <p className="text-slate-400">Checklist not found</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-6xl mx-auto pt-6 pb-12">
+    <div className="w-full px-4 pt-6 pb-12">
       {/* Header */}
       <div className="mb-8">
         <button
