@@ -535,11 +535,16 @@ async def create_project_step(
         .where(models.ProjectStep.project_id == project_id)
     )
     max_pos = result.scalar_one()
+    content = data.content if data.content is not None else {}
+    content_text = data.content_text
+    if data.content is not None and content_text is None:
+        content_text = _extract_tiptap_text(data.content)
     step = models.ProjectStep(
         project_id=project_id,
         title=data.title,
         position=max_pos + 1,
-        content={},
+        content=content,
+        content_text=content_text,
     )
     db.add(step)
     await db.commit()

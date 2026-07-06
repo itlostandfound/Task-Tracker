@@ -187,7 +187,8 @@ class ProjectStepBase(BaseModel):
 
 
 class ProjectStepCreate(ProjectStepBase):
-    pass
+    content: Optional[dict] = None
+    content_text: Optional[str] = None
 
 
 class ProjectStepUpdate(BaseModel):
