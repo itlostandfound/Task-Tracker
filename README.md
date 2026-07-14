@@ -393,6 +393,14 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ![Task Tracker Dashboard v3](./images/Task-Tracker.v3.png)
 
+### v3.0.1 – v3.0.4 - Fixes & Release Automation
+
+- Fixed project step 500 errors and added a favicon
+- Fixed favicon serving, detail page width, and step editor height
+- `create_project_step` now persists `content`/`content_text` when provided at creation time, instead of requiring a follow-up update call
+- Fixed switching between trackers leaving the Notes panel or note editor modal showing the previously-selected tracker's data
+- Docker publish workflow now triggers on `vX.Y.Z` tag pushes, with the image version derived from the tag — replacing the old hardcoded `VERSION` string that had to be bumped by hand each release
+
 ## Co-Authored By
 
 - **Claude (Sonnet 4.6)** - AI assistant by Anthropic
