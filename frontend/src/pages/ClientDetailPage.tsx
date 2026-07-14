@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useTracker } from '../hooks/useClients'
 import { useAppStore } from '../stores/useAppStore'
@@ -11,7 +12,18 @@ export function ClientDetailPage() {
   const { id: clientId } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { data: client, isLoading } = useTracker(clientId || null)
-  const { selectedTaskId, editingNoteId } = useAppStore()
+  const { selectedTaskId, editingNoteId, setSelectedTaskId, setEditingNoteId, closeModal } = useAppStore()
+
+  // selectedTaskId/editingNoteId/modal are global state, not scoped to a
+  // tracker. Without this, navigating to a different tracker (e.g. via
+  // browser back/forward, since the sidebar is hidden on this route) leaves
+  // the previously-selected task's notes showing, or leaves the note editor
+  // modal open and pointed at the old tracker's note/task.
+  useEffect(() => {
+    setSelectedTaskId(null)
+    setEditingNoteId(null)
+    closeModal()
+  }, [clientId, setSelectedTaskId, setEditingNoteId, closeModal])
 
   if (isLoading) {
     return <div className="text-slate-400">Loading tracker details...</div>
