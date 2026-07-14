@@ -77,10 +77,6 @@ export function RoyalCrest() {
       <p className="text-xs text-royal-gold/60 font-serif italic leading-snug text-center px-2">
         Problem Solved...Problem Staying Solved
       </p>
-      <div className="flourish my-3 w-24"><span>·</span></div>
-      <p className="text-xs text-royal-gold/50 font-serif italic leading-snug text-center px-2">
-        Version 3.0.1
-      </p>
     </div>
   )
 }
